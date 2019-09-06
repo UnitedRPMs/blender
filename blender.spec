@@ -11,15 +11,6 @@
 %global cyclesflag OFF
 %endif
 
-%ifarch x86_64
-
-# Each CUDA ptxas invocation can consume more than 4 gb of memory, so limit the
-# number of parallel make jobs to something suitable for your system when the
-# CUDA build is enabled.
-%global _with_cuda 0
-%global cuda_version 10.1
-
-%endif
 
 # Enable this or rebuild the package with "--with=ffmpeg" to enable FFmpeg
 # support.
@@ -48,13 +39,6 @@ Source10:   macros.%{name}
 Patch0:     blender-2.80-droid.patch
 # https://sources.debian.org/patches/blender/2.80+dfsg-2/0006-add_ppc64el-s390x_support.patch/
 Patch1:     blender-2.80-add_ppc64el-s390x_support.patch
-
-%{?_with_cuda:
-%if 0%{?fedora} >= 30
-BuildRequires:  cuda-gcc-c++
-%endif
-BuildRequires:  cuda-devel >= %{cuda_version}
-}
 
 # Development stuff
 BuildRequires:  boost-devel
@@ -151,13 +135,6 @@ animation, rendering and post-production to interactive creation and playback.
 Professionals and novices can easily and inexpensively publish stand-alone,
 secure, multi-platform content to the web, CD-ROMs, and other media.
 
-#%%package -n blenderplayer
-#Summary:        Standalone Blender player
-#Provides:       %%{name}(ABI) = %%{blender_api}
-
-#%description -n blenderplayer
-#This package contains a stand alone release of the Blender player. You will need
-#this package to play games which are based on the Blender Game Engine.
 
 %package rpm-macros
 Summary:        RPM macros to build third-party blender addons packages
@@ -178,18 +155,6 @@ Provides:       fonts-%{name} = %{?epoch:%{epoch}:}%{version}-%{release}
 This package contains an international Blender mono space font which is a
 composition of several mono space fonts to cover several character sets.
 
-%{?_with_cuda:
-%package cuda
-Summary:       CUDA support for Blender
-Requires:      %{name} = %{?epoch:%{epoch}:}%{version}-%{release}
-# It dynamically opens libcuda.so.1 and libnvrtc.so.8.0
-Requires:      nvidia-driver-cuda-libs%{?_isa}
-Requires:      cuda-nvrtc
-
-%description cuda
-This package contains CUDA support for Blender, to enable rendering on supported
-Nvidia GPUs.
-}
 
 %prep
 %autosetup -p1
@@ -199,21 +164,6 @@ Nvidia GPUs.
 # proof)
 rm -f build_files/cmake/Modules/FindOpenJPEG.cmake
 
-%{?_with_cuda:
-sed -i \
-    -e 's|libcuda.so|libcuda.so.1|g' \
-    -e 's|libnvrtc.so|libnvrtc.so.%{cuda_version}|g' \
-    extern/cuew/src/cuew.c
-
-sed -i -e \
-%if 0%{?fedora} >= 30
-    's|${CUDA_NVCC_FLAGS}|-I/usr/include/cuda -ccbin /usr/bin/cuda-g++|g' \
-%else
-    's|${CUDA_NVCC_FLAGS}|-I/usr/include/cuda|g' \
-%endif
-    intern/cycles/kernel/CMakeLists.txt
-
-}
 
 mkdir cmake-make
 
@@ -254,13 +204,8 @@ pushd cmake-make
     -DWITH_PYTHON_INSTALL_REQUESTS=OFF \
     -DWITH_PYTHON_SAFETY=ON \
     -DWITH_SDL=ON \
-    -DWITH_SYSTEM_LZO=ON \
-%if 0%{?_with_cuda}
-    -DCUDA_NVCC_EXECUTABLE=%{_bindir}/nvcc \
-    -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" \
-    -DWITH_CYCLES_CUDA_BINARIES=ON \
-    -DWITH_CYCLES_CUDA_BUILD_SERIAL=ON
-%endif
+    -DWITH_SYSTEM_LZO=ON 
+
 
 %make_build
 popd
@@ -351,13 +296,6 @@ fi
 %{_metainfodir}/%{name}.appdata.xml
 %endif
 
-#%%files -n %%{name}player
-#%%license COPYING
-#%%license doc/license/*-license.txt
-#%%license release/text/copyright.txt
-#%%{_bindir}/%%{name}player
-#%%{_mandir}/man1/%%{name}player.*
-
 %files rpm-macros
 %{macrosdir}/macros.%{name}
 
@@ -368,13 +306,9 @@ fi
 %{_metainfodir}/%{name}-fonts.metainfo.xml
 %endif
 
-%{?_with_cuda:
-%files cuda
-%{_datadir}/%{name}/%{blender_api}/scripts/addons/cycles/lib/*.cubin
-}
 
 %changelog
-* Thu Sep 05 2019 David Va <davidva AT tuta DOT io> - 2:2.80-7
+* Thu Sep 05 2019 David Va <davidva AT tuta DOT io> - 1:2.80-10
 - Upstream
 - Disabled CUDA
 
