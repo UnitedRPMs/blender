@@ -32,7 +32,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    7%{?dist}
+Release:    10%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -45,9 +45,9 @@ Source5:    %{name}.xml
 Source6:    %{name}.appdata.xml
 Source10:   macros.%{name}
 
-Patch0:     %{name}-2.80-droid.patch
+Patch0:     blender-2.80-droid.patch
 # https://sources.debian.org/patches/blender/2.80+dfsg-2/0006-add_ppc64el-s390x_support.patch/
-Patch1:     %{name}-2.80-add_ppc64el-s390x_support.patch
+Patch1:     blender-2.80-add_ppc64el-s390x_support.patch
 
 %{?_with_cuda:
 %if 0%{?fedora} >= 30
