@@ -94,7 +94,7 @@ BuildRequires:  libtiff-devel
 BuildRequires:  libwebp-devel
 BuildRequires:  OpenColorIO-devel
 BuildRequires:  OpenEXR-devel
-BuildRequires:  OpenImageIO-devel
+BuildRequires:  OpenImageIO-devel >= 2.0.10
 BuildRequires:  openjpeg2-devel
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
 BuildRequires:  openvdb-devel
