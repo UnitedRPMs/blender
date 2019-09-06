@@ -16,7 +16,7 @@
 # Each CUDA ptxas invocation can consume more than 4 gb of memory, so limit the
 # number of parallel make jobs to something suitable for your system when the
 # CUDA build is enabled.
-%global _with_cuda 1
+%global _with_cuda 0
 %global cuda_version 10.1
 
 %endif
@@ -30,9 +30,9 @@
 %global _with_openvdb 1
 
 Name:       blender
-Epoch:      2
+Epoch:      1
 Version:    %{blender_api}
-Release:    6%{?dist}
+Release:    7%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -374,6 +374,10 @@ fi
 }
 
 %changelog
+* Thu Sep 05 2019 David Va <davidva AT tuta DOT io> - 2:2.80-7
+- Upstream
+- Disabled CUDA
+
 * Tue Aug 20 2019 Simone Caronni <negativo17@gmail.com> - 2:2.80-6
 - Enable OpenVDB.
 
