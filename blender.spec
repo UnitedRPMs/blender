@@ -174,6 +174,7 @@ pushd cmake-make
 %ifnarch %{ix86} x86_64
     -DWITH_RAYOPTIMIZATION=OFF \
 %endif
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
     -DBOOST_ROOT=%{_prefix} \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_SKIP_RPATH=ON \
@@ -207,12 +208,12 @@ pushd cmake-make
     -DWITH_SYSTEM_LZO=ON 
 
 
-%make_build
+%make_build VERBOSE=0
 popd
 
 %install
 pushd cmake-make
-%make_install
+%make_install VERBOSE=0
 popd
 
 # Thumbnailer
