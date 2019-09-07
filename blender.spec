@@ -170,7 +170,12 @@ mkdir cmake-make
 %build
 pushd cmake-make
 
-%cmake .. \
+cmake \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -DENABLE_CCACHE=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
 %ifnarch %{ix86} x86_64
     -DWITH_RAYOPTIMIZATION=OFF \
 %endif
@@ -205,7 +210,7 @@ pushd cmake-make
     -DWITH_PYTHON_INSTALL_REQUESTS=OFF \
     -DWITH_PYTHON_SAFETY=ON \
     -DWITH_SDL=ON \
-    -DWITH_SYSTEM_LZO=ON 
+    -DWITH_SYSTEM_LZO=ON ..
 
 
 %make_build VERBOSE=0
