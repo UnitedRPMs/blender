@@ -1,3 +1,5 @@
+%global debug_package %{nil}
+
 %global blender_api 2.80
 
 # Turn off the brp-python-bytecompile script
@@ -92,7 +94,7 @@ BuildRequires:  libpng-devel
 BuildRequires:  libtheora-devel
 BuildRequires:  libtiff-devel
 BuildRequires:  libwebp-devel
-BuildRequires:  OpenColorIO-devel
+BuildRequires:  OpenColorIO-devel >= 1.1.1
 BuildRequires:  OpenEXR-devel
 BuildRequires:  OpenImageIO-devel >= 2.0.10
 BuildRequires:  openjpeg2-devel
@@ -249,7 +251,7 @@ install -p -m 644 -D %{SOURCE2} %{buildroot}%{_metainfodir}/%{name}-fonts.metain
 %find_lang %{name}
 
 # Avoid having locales listed twice
-rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale/languages
+rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 # rpmlint fixes
 find %{buildroot}%{_datadir}/%{name}/%{blender_api}/scripts -name "*.py" -exec chmod 755 {} \;
@@ -315,6 +317,7 @@ fi
 
 %changelog
 * Thu Sep 05 2019 David Va <davidva AT tuta DOT io> - 1:2.80-10
+- Enabled ffmpeg
 - Upstream
 - Disabled CUDA
 
