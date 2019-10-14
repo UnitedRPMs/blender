@@ -25,7 +25,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    10%{?dist}
+Release:    11%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -41,6 +41,8 @@ Source10:   macros.%{name}
 Patch0:     blender-2.80-droid.patch
 # https://sources.debian.org/patches/blender/2.80+dfsg-2/0006-add_ppc64el-s390x_support.patch/
 Patch1:     blender-2.80-add_ppc64el-s390x_support.patch
+# compatibility with Python 3.8 fix
+Patch2:     D6038.diff
 
 # Development stuff
 BuildRequires:  boost-devel
@@ -316,6 +318,10 @@ fi
 
 
 %changelog
+
+* Sat Oct 12 2019 David Va <davidva AT tuta DOT io> - 1:2.80-11
+- Rebuilt for openvdb
+
 * Thu Sep 05 2019 David Va <davidva AT tuta DOT io> - 1:2.80-10
 - Enabled ffmpeg
 - Upstream
