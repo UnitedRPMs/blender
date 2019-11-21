@@ -1,5 +1,10 @@
 %global debug_package %{nil}
 
+%global gitdate 20191116
+%global commit0 f6cb5f54494e40f0d217c7a1520a14896bd19120
+%global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
+%global gver .git%{shortcommit0}
+
 %global blender_api 2.80
 
 # Turn off the brp-python-bytecompile script
@@ -25,13 +30,13 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    11%{?dist}
+Release:    20%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
 URL:        http://www.blender.org
 
-Source0:    http://download.%{name}.org/source/%{name}-%{version}.tar.gz
+Source0:    https://git.blender.org/gitweb/gitweb.cgi/blender.git/snapshot/%{commit0}.tar.gz#/%{name}-%{shortcommit0}.tar.gz
 Source1:    %{name}.thumbnailer
 Source2:    %{name}-fonts.metainfo.xml
 Source5:    %{name}.xml
@@ -39,8 +44,6 @@ Source6:    %{name}.appdata.xml
 Source10:   macros.%{name}
 
 Patch0:     blender-2.80-droid.patch
-# https://sources.debian.org/patches/blender/2.80+dfsg-2/0006-add_ppc64el-s390x_support.patch/
-Patch1:     blender-2.80-add_ppc64el-s390x_support.patch
 # compatibility with Python 3.8 fix
 Patch2:     D6038.diff
 
@@ -64,6 +67,7 @@ BuildRequires:  python3-devel >= 3.5
 BuildRequires:  python3-numpy
 BuildRequires:  python3-requests
 BuildRequires:  subversion-devel
+BuildRequires:	help2man
 
 # Compression stuff
 BuildRequires:  lzo-devel
@@ -104,6 +108,9 @@ BuildRequires:  openjpeg2-devel
 BuildRequires:  openvdb-devel
 %endif
 BuildRequires:  tbb-devel
+# New
+BuildRequires:  libXxf86vm-devel
+BuildRequires:	libXrender-devel
 
 # Audio stuff
 BuildRequires:  freealut-devel
@@ -113,9 +120,12 @@ BuildRequires:  libogg-devel
 BuildRequires:  libsamplerate-devel
 BuildRequires:  libsndfile-devel
 BuildRequires:  libvorbis-devel
-
+	
 # Typography stuff
 BuildRequires:  fontpackages-devel
+BuildRequires:  freetype-devel
+
+# packages-devel
 BuildRequires:  freetype-devel
 
 %if 0%{?fedora} || 0%{?rhel} >= 8
@@ -161,7 +171,7 @@ composition of several mono space fonts to cover several character sets.
 
 
 %prep
-%autosetup -p1
+%autosetup -n blender-%{shortcommit0} -p1
 
 # Delete the bundled FindOpenJPEG to make find_package use the system version
 # instead (the local version hardcodes the openjpeg version so it is not update
@@ -172,12 +182,20 @@ rm -f build_files/cmake/Modules/FindOpenJPEG.cmake
 mkdir cmake-make
 
 %build
+
+# Change shebang in all relevant files in this directory and all subdirectories
+# See `man find` for how the `-exec command {} +` syntax works
+find -type f -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
+
 pushd cmake-make
+
+# FIXME manpage & lang in F32
 
 cmake \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -DWITH_LLVM:BOOL=ON \
     -DENABLE_CCACHE=OFF \
     -DCMAKE_BUILD_TYPE=Release \
 %ifnarch %{ix86} x86_64
@@ -195,7 +213,11 @@ cmake \
     -DWITH_CODEC_SNDFILE=ON \
     -DWITH_CXX_GUARDEDALLOC=OFF \
     -DWITH_CYCLES=%{cyclesflag} \
+%if 0%{?fedora} <= 33
     -DWITH_DOC_MANPAGE=ON \
+%else
+    -DWITH_DOC_MANPAGE=OFF \
+%endif
     -DWITH_FFTW3=ON \
     -DWITH_IMAGE_OPENJPEG=ON \
     -DWITH_INPUT_NDOF=ON \
@@ -205,6 +227,7 @@ cmake \
     -DWITH_MOD_OCEANSIM=ON \
     -DWITH_OPENCOLLADA=ON \
     -DWITH_OPENCOLORIO=ON \
+    -DWITH_OPENIMAGEIO:=ON \
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
     -DWITH_OPENVDB=ON \
     -DWITH_OPENVDB_BLOSC=ON} \
@@ -218,7 +241,7 @@ cmake \
     -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" ..
 
 
-%make_build VERBOSE=0
+make $_smp_mflags VERBOSE=0
 popd
 
 %install
@@ -246,12 +269,16 @@ sed -e 's/@VERSION@/%{blender_api}/g' %{SOURCE10} > %{buildroot}%{macrosdir}/mac
 
 # AppData
 install -p -m 644 -D %{SOURCE6} %{buildroot}%{_metainfodir}/%{name}.appdata.xml
-install -p -m 644 -D %{SOURCE2} %{buildroot}%{_metainfodir}/%{name}-fonts.metainfo.xml
+%if 0%{?fedora} <= 33
 
+install -p -m 644 -D %{SOURCE2} %{buildroot}%{_metainfodir}/%{name}-fonts.metainfo.xml
+%endif
 %endif
 
 # Localization
+%if 0%{?fedora} <= 33
 %find_lang %{name}
+%endif
 
 # Avoid having locales listed twice
 rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
@@ -264,7 +291,9 @@ find %{buildroot}%{_datadir}/%{name}/%{blender_api}/scripts -name "*.py" -exec c
 
 %check
 appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/%{name}.appdata.xml
+%if 0%{?fedora} <= 33
 appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/%{name}-fonts.metainfo.xml
+%endif
 
 %endif
 
@@ -289,7 +318,11 @@ fi
 
 %endif
 
+%if 0%{?fedora} <= 33
 %files -f %{name}.lang
+%else
+%files
+%endif
 %license COPYING
 %license doc/license/*-license.txt
 %license release/text/copyright.txt
@@ -298,11 +331,13 @@ fi
 %{_bindir}/%{name}-thumbnailer.py
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/%{name}/
-%exclude %{_datadir}/%{name}/%{blender_api}/scripts/addons/cycles/lib/*.cubin
+#exclude {_datadir}/{name}/{blender_api}/scripts/addons/cycles/lib/*.cubin
 %{_datadir}/icons/hicolor/*/apps/%{name}*.*
 %{_datadir}/mime/packages/%{name}.xml
 %{_datadir}/thumbnailers/%{name}.thumbnailer
+%if 0%{?fedora} <= 33
 %{_mandir}/man1/%{name}.*
+%endif
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %{_metainfodir}/%{name}.appdata.xml
 %endif
@@ -310,15 +345,19 @@ fi
 %files rpm-macros
 %{macrosdir}/macros.%{name}
 
+%if 0%{?fedora} <= 33
 %files fonts
-%license release/datafiles/LICENSE-*.ttf.txt
+#license release/datafiles/LICENSE-*.ttf.txt
 %{_fontbasedir}/%{name}/
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %{_metainfodir}/%{name}-fonts.metainfo.xml
 %endif
-
+%endif
 
 %changelog
+
+* Fri Nov 15 2019 David Va <davidva AT tuta DOT io> - 1:2.80-20
+- Rebuilt for alembic 
 
 * Sat Oct 12 2019 David Va <davidva AT tuta DOT io> - 1:2.80-11
 - Rebuilt for openvdb
