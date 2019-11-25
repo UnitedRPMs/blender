@@ -1,11 +1,11 @@
 %global debug_package %{nil}
 
-%global gitdate 20191116
-%global commit0 f6cb5f54494e40f0d217c7a1520a14896bd19120
+%global gitdate 20191124
+%global commit0 26bd5ebd42e36c7d0cc1f156447080b1f6099897
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.80
+%global blender_api 2.81
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -30,7 +30,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    20%{?dist}
+Release:    7%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -39,6 +39,7 @@ URL:        http://www.blender.org
 Source0:    https://git.blender.org/gitweb/gitweb.cgi/blender.git/snapshot/%{commit0}.tar.gz#/%{name}-%{shortcommit0}.tar.gz
 Source1:    %{name}.thumbnailer
 Source2:    %{name}-fonts.metainfo.xml
+Source3:    https://github.com/UnitedRPMs/blender/releases/download/2.81/locale.tar.gz
 Source5:    %{name}.xml
 Source6:    %{name}.appdata.xml
 Source10:   macros.%{name}
@@ -171,7 +172,9 @@ composition of several mono space fonts to cover several character sets.
 
 
 %prep
-%autosetup -n blender-%{shortcommit0} -p1
+%autosetup -n blender-%{shortcommit0} -p1 -a3
+
+mv -f locale release/datafiles/
 
 # Delete the bundled FindOpenJPEG to make find_package use the system version
 # instead (the local version hardcodes the openjpeg version so it is not update
@@ -189,7 +192,6 @@ find -type f -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!%{__
 
 pushd cmake-make
 
-# FIXME manpage & lang in F32
 
 cmake \
     -DCMAKE_INSTALL_PREFIX=/usr \
@@ -213,11 +215,8 @@ cmake \
     -DWITH_CODEC_SNDFILE=ON \
     -DWITH_CXX_GUARDEDALLOC=OFF \
     -DWITH_CYCLES=%{cyclesflag} \
-%if 0%{?fedora} <= 33
     -DWITH_DOC_MANPAGE=ON \
-%else
-    -DWITH_DOC_MANPAGE=OFF \
-%endif
+    -DWITH_INTERNATIONAL=ON \
     -DWITH_FFTW3=ON \
     -DWITH_IMAGE_OPENJPEG=ON \
     -DWITH_INPUT_NDOF=ON \
@@ -269,16 +268,13 @@ sed -e 's/@VERSION@/%{blender_api}/g' %{SOURCE10} > %{buildroot}%{macrosdir}/mac
 
 # AppData
 install -p -m 644 -D %{SOURCE6} %{buildroot}%{_metainfodir}/%{name}.appdata.xml
-%if 0%{?fedora} <= 33
 
 install -p -m 644 -D %{SOURCE2} %{buildroot}%{_metainfodir}/%{name}-fonts.metainfo.xml
 %endif
-%endif
 
 # Localization
-%if 0%{?fedora} <= 33
 %find_lang %{name}
-%endif
+
 
 # Avoid having locales listed twice
 rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
@@ -291,9 +287,9 @@ find %{buildroot}%{_datadir}/%{name}/%{blender_api}/scripts -name "*.py" -exec c
 
 %check
 appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/%{name}.appdata.xml
-%if 0%{?fedora} <= 33
+
 appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/%{name}-fonts.metainfo.xml
-%endif
+
 
 %endif
 
@@ -318,11 +314,8 @@ fi
 
 %endif
 
-%if 0%{?fedora} <= 33
+
 %files -f %{name}.lang
-%else
-%files
-%endif
 %license COPYING
 %license doc/license/*-license.txt
 %license release/text/copyright.txt
@@ -335,9 +328,7 @@ fi
 %{_datadir}/icons/hicolor/*/apps/%{name}*.*
 %{_datadir}/mime/packages/%{name}.xml
 %{_datadir}/thumbnailers/%{name}.thumbnailer
-%if 0%{?fedora} <= 33
 %{_mandir}/man1/%{name}.*
-%endif
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %{_metainfodir}/%{name}.appdata.xml
 %endif
@@ -345,16 +336,19 @@ fi
 %files rpm-macros
 %{macrosdir}/macros.%{name}
 
-%if 0%{?fedora} <= 33
+
 %files fonts
 #license release/datafiles/LICENSE-*.ttf.txt
 %{_fontbasedir}/%{name}/
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %{_metainfodir}/%{name}-fonts.metainfo.xml
 %endif
-%endif
+
 
 %changelog
+
+* Sun Nov 24 2019 David Va <davidva AT tuta DOT io> - 1:2.81-7
+- Updated to 1:2.81-7
 
 * Fri Nov 15 2019 David Va <davidva AT tuta DOT io> - 1:2.80-20
 - Rebuilt for alembic 

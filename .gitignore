@@ -5,6 +5,7 @@ SPECS/*
 SRPMS/*
 new/
 orig/
-cin*.tgz
-cin*.tar.gz
+*.tgz
+*.tar.gz
 *.rpm
+.directory
