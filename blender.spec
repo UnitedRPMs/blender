@@ -30,7 +30,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    7%{?dist}
+Release:    8%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -106,7 +106,7 @@ BuildRequires:  OpenEXR-devel
 BuildRequires:  OpenImageIO-devel >= 2.0.10
 BuildRequires:  openjpeg2-devel
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
-BuildRequires:  openvdb-devel
+BuildRequires:  openvdb-devel >= 7.0.0
 %endif
 BuildRequires:  tbb-devel
 # New
@@ -346,6 +346,9 @@ fi
 
 
 %changelog
+
+* Sun Dec 29 2019 David Va <davidva AT tuta DOT io> - 1:2.81-8
+- Rebuilt for openvdb
 
 * Sun Nov 24 2019 David Va <davidva AT tuta DOT io> - 1:2.81-7
 - Updated to 1:2.81-7
