@@ -283,37 +283,6 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 find %{buildroot}%{_datadir}/%{name}/%{blender_api}/scripts -name "*.py" -exec chmod 755 {} \;
 #find %{buildroot}%{_datadir}/%{name}/scripts -type f -exec sed -i -e 's/\r$//g' {} \;
 
-%if 0%{?fedora} || 0%{?rhel} >= 8
-
-%check
-appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/%{name}.appdata.xml
-
-appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/%{name}-fonts.metainfo.xml
-
-
-%endif
-
-%if 0%{?rhel} == 7
-
-%post
-/usr/bin/update-desktop-database &> /dev/null || :
-/bin/touch --no-create %{_datadir}/icons/hicolor &> /dev/null || :
-/bin/touch --no-create %{_datadir}/mime/packages &> /dev/null || :
-
-%postun
-/usr/bin/update-desktop-database &> /dev/null || :
-if [ $1 -eq 0 ] ; then
-    /bin/touch --no-create %{_datadir}/icons/hicolor &> /dev/null || :
-    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &> /dev/null || :
-    /usr/bin/update-mime-database %{?fedora:-n} %{_datadir}/mime &> /dev/null || :
-fi
-
-%posttrans
-/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-/usr/bin/update-mime-database %{?fedora:-n} %{_datadir}/mime &> /dev/null || :
-
-%endif
-
 
 %files -f %{name}.lang
 %license COPYING
