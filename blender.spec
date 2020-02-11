@@ -1,11 +1,11 @@
 %global debug_package %{nil}
 
-%global gitdate 20191124
-%global commit0 26bd5ebd42e36c7d0cc1f156447080b1f6099897
+%global gitdate 20200211
+%global commit0 f1aa4d18d49daf483c54f35e3e2e629f7b3a925c
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.81
+%global blender_api 2.81.a
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -30,7 +30,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    8%{?dist}
+Release:    7%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -280,7 +280,7 @@ install -p -m 644 -D %{SOURCE2} %{buildroot}%{_metainfodir}/%{name}-fonts.metain
 rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 # rpmlint fixes
-find %{buildroot}%{_datadir}/%{name}/%{blender_api}/scripts -name "*.py" -exec chmod 755 {} \;
+# find %{buildroot}%{_datadir}/%{name}/%{blender_api}/scripts -name "*.py" -exec chmod 755 {} \;
 #find %{buildroot}%{_datadir}/%{name}/scripts -type f -exec sed -i -e 's/\r$//g' {} \;
 
 
@@ -315,6 +315,9 @@ find %{buildroot}%{_datadir}/%{name}/%{blender_api}/scripts -name "*.py" -exec c
 
 
 %changelog
+
+* Tue Feb 11 2020 David Va <davidva AT tuta DOT io> - 1:2.81.a-7
+- Updated to 2.81.a
 
 * Sun Dec 29 2019 David Va <davidva AT tuta DOT io> - 1:2.81-8
 - Rebuilt for openvdb
