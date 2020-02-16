@@ -61,9 +61,8 @@ Source5:    %{name}.xml
 Source6:    %{name}.appdata.xml
 Source10:   macros.%{name}
 
-Patch0:     blender-2.80-droid.patch
 # compatibility with Python 3.8 fix
-Patch2:     D6038.diff
+Patch1:     D6038.diff
 
 # Development stuff
 BuildRequires:  boost-devel
