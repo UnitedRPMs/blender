@@ -12,13 +12,13 @@
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
 #
-
 # Please submit bugfixes or comments via https://goo.gl/zqFJft
 #
+
 %global debug_package %{nil}
 
-%global gitdate 20200211
-%global commit0 f1aa4d18d49daf483c54f35e3e2e629f7b3a925c
+%global gitdate 20200216
+%global commit0 5b416ffb848e66238d9646a239840499f98121a9
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
