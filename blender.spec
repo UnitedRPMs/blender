@@ -13,6 +13,8 @@
 # published by the Open Source Initiative.
 #
 
+# Please submit bugfixes or comments via https://goo.gl/zqFJft
+#
 %global debug_package %{nil}
 
 %global gitdate 20200211
@@ -20,7 +22,7 @@
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.81.a
+%global blender_api 2.82
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -264,10 +266,10 @@ pushd cmake-make
 popd
 
 # Thumbnailer
-install -p -D -m 644 %{SOURCE1} %{buildroot}%{_datadir}/thumbnailers/%{name}.thumbnailer
+install -p -D -m 644 %{S:1} %{buildroot}%{_datadir}/thumbnailers/%{name}.thumbnailer
 
 # Mime support
-install -p -D -m 644 %{SOURCE5} %{buildroot}%{_datadir}/mime/packages/%{name}.xml
+install -p -D -m 644 %{S:5} %{buildroot}%{_datadir}/mime/packages/%{name}.xml
 
 # Desktop icon
 desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
@@ -277,14 +279,14 @@ rm -rf %{buildroot}%{_docdir}/%{name}/*
 
 # rpm macros
 mkdir -p %{buildroot}%{macrosdir}
-sed -e 's/@VERSION@/%{blender_api}/g' %{SOURCE10} > %{buildroot}%{macrosdir}/macros.%{name}
+sed -e 's/@VERSION@/%{blender_api}/g' %{S:10} > %{buildroot}%{macrosdir}/macros.%{name}
 
 %if 0%{?fedora} || 0%{?rhel} >= 8
 
 # AppData
-install -p -m 644 -D %{SOURCE6} %{buildroot}%{_metainfodir}/%{name}.appdata.xml
+install -p -m 644 -D %{S:6} %{buildroot}%{_metainfodir}/%{name}.appdata.xml
 
-install -p -m 644 -D %{SOURCE2} %{buildroot}%{_metainfodir}/%{name}-fonts.metainfo.xml
+install -p -m 644 -D %{S:2} %{buildroot}%{_metainfodir}/%{name}-fonts.metainfo.xml
 %endif
 
 # Localization
@@ -330,6 +332,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Sun Feb 16 2020 David Va <davidva AT tuta DOT io> - 1:2.82-7
+- Updated to 2.82
 
 * Tue Feb 11 2020 David Va <davidva AT tuta DOT io> - 1:2.81.a-7
 - Updated to 2.81.a
