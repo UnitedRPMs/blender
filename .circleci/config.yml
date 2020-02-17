@@ -4,11 +4,9 @@ jobs:
     docker: 
       - image: davidva/unibuild-32	
     working_directory: ~/enjoy
-    parallelism: 3
-    timeout: 1800
     steps:
       - checkout
-      - run: /bin/sh -c "cd / && rm -f /urpms && /usr/bin/wget -c https://raw.githubusercontent.com/kuboosoft/united-build/master/urpms && chmod a+x $PWD/urpms && ./urpms -g UnitedRPMs/blender -s blender.spec -r true -d 'dist .fc32' -u true" 
+      - run: "cd / && rm -f /urpms && /usr/bin/wget -c https://raw.githubusercontent.com/kuboosoft/united-build/master/urpms && chmod a+x $PWD/urpms && ./urpms -g UnitedRPMs/blender -s blender.spec -r true -d 'dist .fc32' -u true" 
 workflows:
   version: 2
   build_and_test:
