@@ -62,7 +62,7 @@ Source6:    %{name}.appdata.xml
 Source10:   macros.%{name}
 
 # compatibility with Python 3.8 fix
-Patch1:     D6038.diff
+# Patch1:     D6038.diff
 
 # Development stuff
 BuildRequires:  boost-devel
