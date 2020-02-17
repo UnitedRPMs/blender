@@ -3,9 +3,11 @@ jobs:
   build:
     docker: 
       - image: davidva/unibuild-32	
+    working_directory: ~/enjoy
     parallelism: 1
     steps:
-      - run: docker run --privileged=true --cap-add=SYS_ADMIN -v $(pwd)/32:/root/enjoy/ --security-opt seccomp:unconfined davidva/unibuild-32 /bin/sh -c "rm -f /urpms && wget -c https://raw.githubusercontent.com/kuboosoft/united-build/master/urpms && chmod a+x urpms && /urpms -g UnitedRPMs/blender -s blender.spec -r true -d 'dist .fc32' -u true" 
+      - checkout
+      - run: " cd / && rm -f /urpms && /usr/bin/wget -c https://raw.githubusercontent.com/kuboosoft/united-build/master/urpms && chmod a+x $PWD/urpms && ./urpms -g UnitedRPMs/blender -s blender.spec -r true -d 'dist .fc32' -u true" 
 workflows:
   version: 2
   build_and_test:
