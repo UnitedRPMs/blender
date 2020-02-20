@@ -324,7 +324,7 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 %files fonts
 #license release/datafiles/LICENSE-*.ttf.txt
-%{_fontbasedir}/%{name}/
+#{_fontbasedir}/#{name}/
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %{_metainfodir}/%{name}-fonts.metainfo.xml
 %endif
