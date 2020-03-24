@@ -17,12 +17,12 @@
 
 %global debug_package %{nil}
 
-%global gitdate 20200216
-%global commit0 5b416ffb848e66238d9646a239840499f98121a9
+%global gitdate 20200323
+%global commit0 375c7dc4caf449d40f11d3fd40fa1372636e76d3
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.82
+%global blender_api 2.82.a
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -331,6 +331,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Sun Feb 16 2020 David Va <davidva AT tuta DOT io> - 1:2.82.a-7
+- Updated to 2.82.a
 
 * Sun Feb 16 2020 David Va <davidva AT tuta DOT io> - 1:2.82-7
 - Updated to 2.82
