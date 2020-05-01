@@ -17,12 +17,12 @@
 
 %global debug_package %{nil}
 
-%global gitdate 20200323
-%global commit0 375c7dc4caf449d40f11d3fd40fa1372636e76d3
+%global gitdate 20200430
+%global commit0 7a809a7504dee23e926e94798d8e9cac1adc7c9d
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.82.a
+%global blender_api 2.83
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -119,7 +119,7 @@ BuildRequires:  libtiff-devel
 BuildRequires:  libwebp-devel
 BuildRequires:  OpenColorIO-devel >= 1.1.1
 BuildRequires:  OpenEXR-devel
-BuildRequires:  OpenImageIO-devel >= 2.0.10
+BuildRequires:  OpenImageIO-devel >= 2.1.13.0
 BuildRequires:  openjpeg2-devel
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
 BuildRequires:  openvdb-devel >= 7.0.0
@@ -331,6 +331,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Thu Apr 30 2020 David Va <davidva AT tuta DOT io> - 1:2.83-7
+- Updated to 2.83
 
 * Sun Feb 16 2020 David Va <davidva AT tuta DOT io> - 1:2.82.a-7
 - Updated to 2.82.a
