@@ -47,7 +47,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    7%{?dist}
+Release:    8%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -331,6 +331,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Mon May 18 2020 David Va <davidva AT tuta DOT io> - 1:2.83-8
+- Rebuilt for LibRaw
 
 * Thu Apr 30 2020 David Va <davidva AT tuta DOT io> - 1:2.83-7
 - Updated to 2.83
