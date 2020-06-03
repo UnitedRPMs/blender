@@ -47,7 +47,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    8%{?dist}
+Release:    9%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -80,7 +80,11 @@ BuildRequires:  libxml2-devel
 BuildRequires:  openssl-devel
 BuildRequires:  pcre-devel
 BuildRequires:  pugixml-devel
-BuildRequires:  python3-devel >= 3.5
+%if 0%{?fedora} >= 33
+BuildRequires:  python3.9-devel
+%else
+BuildRequires:  python3-devel
+%endif
 BuildRequires:  python3-numpy
 BuildRequires:  python3-requests
 BuildRequires:  subversion-devel
@@ -331,6 +335,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Tue Jun 02 2020 David Va <davidva AT tuta DOT io> - 1:2.83-9
+- Rebuilt for python3.9
 
 * Mon May 18 2020 David Va <davidva AT tuta DOT io> - 1:2.83-8
 - Rebuilt for LibRaw
