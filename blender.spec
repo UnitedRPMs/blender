@@ -15,10 +15,10 @@
 # Please submit bugfixes or comments via https://goo.gl/zqFJft
 #
 
+%define _legacy_common_support 1
 %global debug_package %{nil}
 
-%global gitdate 20200430
-%global commit0 7a809a7504dee23e926e94798d8e9cac1adc7c9d
+%global commit0 211b6c29f771809a39a2b8155e8bb64489c7522c
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
@@ -47,7 +47,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    9%{?dist}
+Release:    10%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -80,13 +80,17 @@ BuildRequires:  libxml2-devel
 BuildRequires:  openssl-devel
 BuildRequires:  pcre-devel
 BuildRequires:  pugixml-devel
+
 %if 0%{?fedora} >= 33
-BuildRequires:  python3.9-devel
+BuildRequires:  python3.8-devel
+BuildRequires:  python3.8-numpy
+BuildRequires:  python3.8-requests
 %else
 BuildRequires:  python3-devel
-%endif
+BuildRequires:  python3-rpm-macros
 BuildRequires:  python3-numpy
 BuildRequires:  python3-requests
+%endif
 BuildRequires:  subversion-devel
 BuildRequires:	help2man
 
@@ -159,8 +163,14 @@ BuildRequires:  libappstream-glib
 Requires:       google-droid-sans-fonts
 Requires:       %{name}-fonts = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:       fontpackages-filesystem
+%if 0%{?fedora} >= 33
+Requires:	python3.8
+Requires:	python3.8-numpy
+Requires:	python3.8-requests
+%else
 Requires:       python3-numpy
 Requires:       python3-requests
+%endif
 Provides:       blender(ABI) = %{blender_api}
 
 %description
@@ -204,16 +214,22 @@ rm -f build_files/cmake/Modules/FindOpenJPEG.cmake
 
 mkdir cmake-make
 
-%build
+
 
 # Change shebang in all relevant files in this directory and all subdirectories
 # See `man find` for how the `-exec command {} +` syntax works
+%if 0%{?fedora} >= 33
+find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr/bin/python3.8=' {} +
+%else
 find -type f -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
+%endif
+
+
+%build
 
 pushd cmake-make
 
-
-cmake \
+%cmake \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
@@ -227,7 +243,7 @@ cmake \
     -DBOOST_ROOT=%{_prefix} \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_SKIP_RPATH=ON \
-    -DPYTHON_VERSION=$(%{__python3} -c "import sys ; print(sys.version[:3])") \
+    -DPYTHON_VERSION=3.8 \
     -DOpenGL_GL_PREFERENCE=GLVND \
     -DWITH_ALEMBIC=ON \
     -DWITH_BUILDINFO=ON \
@@ -257,10 +273,14 @@ cmake \
     -DWITH_PYTHON_SAFETY=ON \
     -DWITH_SDL=ON \
     -DWITH_SYSTEM_LZO=ON \
-    -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" ..
+    -DPYTHON_LIBPATH=/usr/lib64 \
+    -DPYTHON_LIBRARY=python3.8 \
+    -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
+    -DWITH_PYTHON_INSTALL_NUMPY=OFF \
+    -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev ..
 
 
-make $_smp_mflags VERBOSE=0
+make $_smp_mflags VERBOSE=0 
 popd
 
 %install
@@ -335,6 +355,10 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Thu Jun 04 2020 David Va <davidva AT tuta DOT io> - 1:2.83-10
+- Sync to stable
+- Go back to python3.8 in rawhide
 
 * Tue Jun 02 2020 David Va <davidva AT tuta DOT io> - 1:2.83-9
 - Rebuilt for python3.9
