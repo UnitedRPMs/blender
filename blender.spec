@@ -274,8 +274,13 @@ pushd cmake-make
     -DWITH_SDL=ON \
     -DWITH_SYSTEM_LZO=ON \
     -DPYTHON_LIBPATH=/usr/lib64 \
+    %if 0%{?fedora} >= 33
     -DPYTHON_LIBRARY=python3.8 \
     -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
+    %else
+    -DPYTHON_LIBRARY=python%{python3_pkgversion} \
+    -DPYTHON_INCLUDE_DIR=/usr/include/python%{python3_pkgversion} \
+    %endif
     -DWITH_PYTHON_INSTALL_NUMPY=OFF \
     -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev ..
 
