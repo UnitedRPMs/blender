@@ -15,14 +15,17 @@
 # Please submit bugfixes or comments via https://goo.gl/zqFJft
 #
 
+# Turn off the brp-python-bytecompile automagic
+%global _python_bytecompile_extra 0
+
 %define _legacy_common_support 1
 %global debug_package %{nil}
 
-%global commit0 211b6c29f771809a39a2b8155e8bb64489c7522c
+%global commit0 239fbf7d936ff4daaba92a231f4439d12ee4aac6
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.83
+%global blender_api 2.83.2
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -127,7 +130,7 @@ BuildRequires:  libtiff-devel
 BuildRequires:  libwebp-devel
 BuildRequires:  OpenColorIO-devel >= 1.1.1
 BuildRequires:  OpenEXR-devel
-BuildRequires:  OpenImageIO-devel >= 2.1.13.0
+BuildRequires:  OpenImageIO-devel >= 2.1.17.0
 BuildRequires:  openjpeg2-devel
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
 BuildRequires:  openvdb-devel >= 7.0.0
@@ -360,6 +363,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Thu Jul 09 2020 David Va <davidva AT tuta DOT io> - 1:2.83.2-10
+- Updated to 2.83.2
 
 * Thu Jun 04 2020 David Va <davidva AT tuta DOT io> - 1:2.83-10
 - Sync to stable
