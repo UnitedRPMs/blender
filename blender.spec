@@ -30,6 +30,11 @@
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
 
+# Reduce compression level and build time
+%define _source_payload w5.gzdio
+%define _binary_payload w5.gzdio
+
+# Macros
 %global macrosdir %(d=%{_rpmconfigdir}/macros.d; [ -d $d ] || d=%{_sysconfdir}/rpm; echo $d)
 
 %ifarch %{ix86} x86_64
