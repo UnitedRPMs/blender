@@ -89,7 +89,7 @@ BuildRequires:  python3.8-devel
 BuildRequires:  python3.8-numpy
 BuildRequires:  python3.8-requests
 %else
-BuildRequires:  python3-devel
+BuildRequires:  pkgconfig(python3)
 BuildRequires:  python3-rpm-macros
 BuildRequires:  python3-numpy
 BuildRequires:  python3-requests
@@ -221,10 +221,10 @@ mkdir cmake-make
 
 # Change shebang in all relevant files in this directory and all subdirectories
 # See `man find` for how the `-exec command {} +` syntax works
-%if 0%{?fedora} >= 33
+%if 0%{?fedora} >= 32
 find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr/bin/python3.8=' {} +
 %else
-find -type f -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
+find -type f -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr/bin/python3.7=' {} +
 %endif
 
 
@@ -246,7 +246,6 @@ pushd cmake-make
     -DBOOST_ROOT=%{_prefix} \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_SKIP_RPATH=ON \
-    -DPYTHON_VERSION=3.8 \
     -DOpenGL_GL_PREFERENCE=GLVND \
     -DWITH_ALEMBIC=ON \
     -DWITH_BUILDINFO=ON \
@@ -266,23 +265,22 @@ pushd cmake-make
     -DWITH_OPENCOLLADA=ON \
     -DWITH_OPENCOLORIO=ON \
     -DWITH_OPENIMAGEIO:=ON \
-%if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
     -DWITH_OPENVDB=ON \
-    -DWITH_OPENVDB_BLOSC=ON} \
-%endif
+    -DWITH_OPENVDB_BLOSC=ON \
     -DWITH_PYTHON=ON \
     -DWITH_PYTHON_INSTALL=OFF \
     -DWITH_PYTHON_INSTALL_REQUESTS=OFF \
     -DWITH_PYTHON_SAFETY=ON \
     -DWITH_SDL=ON \
     -DWITH_SYSTEM_LZO=ON \
-    -DPYTHON_LIBPATH=/usr/lib64 \
-    %if 0%{?fedora} >= 33
+    %if 0%{?fedora} >= 32
+    -DPYTHON_VERSION=3.8 \
     -DPYTHON_LIBRARY=python3.8 \
     -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
-    %else
-    -DPYTHON_LIBRARY=python%{python3_pkgversion} \
-    -DPYTHON_INCLUDE_DIR=/usr/include/python%{python3_pkgversion} \
+    -DPYTHON_LIBPATH=/usr/lib64 \
+    %endif
+    %if 0%{?fedora} <= 31
+    -DPYTHON_VERSION=%{python3_version} \
     %endif
     -DWITH_PYTHON_INSTALL_NUMPY=OFF \
     -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev ..
