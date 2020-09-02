@@ -21,11 +21,11 @@
 %define _legacy_common_support 1
 %global debug_package %{nil}
 
-%global commit0 239fbf7d936ff4daaba92a231f4439d12ee4aac6
+%global commit0 c2b144df395f37ded6f8b1fd8521c20ed956b36b
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.83.2
+%global blender_api 2.83.5
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -55,7 +55,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    10%{?dist}
+Release:    7%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -220,7 +220,7 @@ mv -f locale release/datafiles/
 rm -f build_files/cmake/Modules/FindOpenJPEG.cmake
 
 
-mkdir cmake-make
+
 
 
 
@@ -234,10 +234,9 @@ find -type f -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr
 
 
 %build
+mkdir -p build; cd build
 
-pushd cmake-make
-
-%cmake \
+cmake \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
@@ -291,11 +290,11 @@ pushd cmake-make
     -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev ..
 
 
-make $_smp_mflags VERBOSE=0 
-popd
+%make_build VERBOSE=0 
+
 
 %install
-pushd cmake-make
+pushd build
 %make_install VERBOSE=0
 popd
 
@@ -366,6 +365,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Sun Aug 23 2020 David Va <davidva AT tuta DOT io> - 1:2.83.5-7
+- Updated to 2.83.5
 
 * Thu Jul 09 2020 David Va <davidva AT tuta DOT io> - 1:2.83.2-10
 - Updated to 2.83.2
