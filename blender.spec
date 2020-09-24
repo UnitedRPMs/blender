@@ -21,11 +21,11 @@
 %define _legacy_common_support 1
 %global debug_package %{nil}
 
-%global commit0 c2b144df395f37ded6f8b1fd8521c20ed956b36b
+%global commit0 0330d1af29c067cf309e4798f5259e01a8c3c668
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.83.5
+%global blender_api 2.90.0
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -55,7 +55,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    8%{?dist}
+Release:    7%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -89,16 +89,11 @@ BuildRequires:  openssl-devel
 BuildRequires:  pcre-devel
 BuildRequires:  pugixml-devel
 
-%if 0%{?fedora} >= 33
-BuildRequires:  python3.8-devel
-BuildRequires:  python3.8-numpy
-BuildRequires:  python3.8-requests
-%else
 BuildRequires:  pkgconfig(python3)
 BuildRequires:  python3-rpm-macros
-BuildRequires:  python3-numpy
-BuildRequires:  python3-requests
-%endif
+BuildRequires:  python3dist(numpy)
+BuildRequires:  python3dist(requests)
+
 BuildRequires:  subversion-devel
 BuildRequires:	help2man
 
@@ -171,14 +166,9 @@ BuildRequires:  libappstream-glib
 Requires:       google-droid-sans-fonts
 Requires:       %{name}-fonts = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:       fontpackages-filesystem
-%if 0%{?fedora} >= 33
-Requires:	python3.8
-Requires:	python3.8-numpy
-Requires:	python3.8-requests
-%else
-Requires:       python3-numpy
-Requires:       python3-requests
-%endif
+Requires:       python3dist(requests)
+Requires:       python3dist(numpy)
+
 Provides:       blender(ABI) = %{blender_api}
 
 %description
@@ -210,7 +200,8 @@ composition of several mono space fonts to cover several character sets.
 
 
 %prep
-%autosetup -n blender-%{shortcommit0} -p1 -a3
+%setup -n blender-%{shortcommit0} -a3
+
 
 mv -f locale release/datafiles/
 
@@ -220,17 +211,9 @@ mv -f locale release/datafiles/
 rm -f build_files/cmake/Modules/FindOpenJPEG.cmake
 
 
-
-
-
-
 # Change shebang in all relevant files in this directory and all subdirectories
 # See `man find` for how the `-exec command {} +` syntax works
-%if 0%{?fedora} >= 32
-find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr/bin/python3.8=' {} +
-%else
-find -type f -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr/bin/python3.7=' {} +
-%endif
+find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
 
 
 %build
@@ -243,6 +226,9 @@ cmake \
     -DWITH_LLVM:BOOL=ON \
     -DENABLE_CCACHE=OFF \
     -DCMAKE_BUILD_TYPE=Release \
+%if 0%{?fedora}
+    -DWITH_CYCLES_EMBREE=OFF \
+    %endif
 %ifnarch %{ix86} x86_64
     -DWITH_RAYOPTIMIZATION=OFF \
 %endif
@@ -277,15 +263,8 @@ cmake \
     -DWITH_PYTHON_SAFETY=ON \
     -DWITH_SDL=ON \
     -DWITH_SYSTEM_LZO=ON \
-    %if 0%{?fedora} >= 32
-    -DPYTHON_VERSION=3.8 \
-    -DPYTHON_LIBRARY=python3.8 \
-    -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
-    -DPYTHON_LIBPATH=/usr/lib64 \
-    %endif
-    %if 0%{?fedora} <= 31
     -DPYTHON_VERSION=%{python3_version} \
-    %endif
+    -DPYTHON_LIBPATH=/usr/lib64 \
     -DWITH_PYTHON_INSTALL_NUMPY=OFF \
     -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev ..
 
@@ -366,8 +345,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 %changelog
 
-* Tue Sep 01 2020  David Va <davidva AT tuta DOT io> - 1:2.83.5-8
-- Rebuilt for OpenImageIO
+* Tue Sep 01 2020 David Va <davidva AT tuta DOT io> - 1:2.90.0-7
+- Updated to 2.90.0
+- Disable Embree, 3.11 is not yet supported.
 
 * Sun Aug 23 2020 David Va <davidva AT tuta DOT io> - 1:2.83.5-7
 - Updated to 2.83.5
