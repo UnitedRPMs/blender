@@ -55,7 +55,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    7%{?dist}
+Release:    8%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -135,7 +135,7 @@ BuildRequires:  libtiff-devel
 BuildRequires:  libwebp-devel
 BuildRequires:  OpenColorIO-devel >= 1.1.1
 BuildRequires:  OpenEXR-devel
-BuildRequires:  OpenImageIO-devel >= 2.1.17.0
+BuildRequires:  OpenImageIO-devel >= 2.2.6.1
 BuildRequires:  openjpeg2-devel
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
 BuildRequires:  openvdb-devel >= 7.0.0
@@ -365,6 +365,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Tue Sep 01 2020  David Va <davidva AT tuta DOT io> - 1:2.83.5-8
+- Rebuilt for OpenImageIO
 
 * Sun Aug 23 2020 David Va <davidva AT tuta DOT io> - 1:2.83.5-7
 - Updated to 2.83.5
