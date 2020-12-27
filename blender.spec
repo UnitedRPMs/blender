@@ -21,11 +21,11 @@
 %define _legacy_common_support 1
 %global debug_package %{nil}
 
-%global commit0 0330d1af29c067cf309e4798f5259e01a8c3c668
+%global commit0 b50598bc78c74634113b4dc08a024828f5aadc97
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.90.0
+%global blender_api 2.91.0
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -61,16 +61,17 @@ Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
 URL:        http://www.blender.org
 
-Source0:    https://git.blender.org/gitweb/gitweb.cgi/blender.git/snapshot/%{commit0}.tar.gz#/%{name}-%{shortcommit0}.tar.gz
+Source0:    http://download.%{name}.org/source/%{name}-%{version}.tar.xz
 Source1:    %{name}.thumbnailer
 Source2:    %{name}-fonts.metainfo.xml
-Source3:    https://github.com/UnitedRPMs/blender/releases/download/2.81/locale.tar.gz
+Source3:    https://github.com/blender/blender-addons-contrib/archive/v%{version}.tar.gz#/blender-addons-contrib.tar.gz
+Source4:    https://developer.download.nvidia.com/redist/optix/v7.0/OptiX-7.0.0-include.zip
 Source5:    %{name}.xml
 Source6:    %{name}.appdata.xml
 Source10:   macros.%{name}
 
-# compatibility with Python 3.8 fix
-# Patch1:     D6038.diff
+
+Patch1:     gltf-import-fix.patch
 
 # Development stuff
 BuildRequires:  boost-devel
@@ -200,10 +201,9 @@ composition of several mono space fonts to cover several character sets.
 
 
 %prep
-%setup -n blender-%{shortcommit0} -a3
-
-
-mv -f locale release/datafiles/
+%setup -n blender-%{version} -a3 -a4
+%patch1 -p1 
+mv -f blender-addons-contrib-%{version} release/scripts/addons_contrib
 
 # Delete the bundled FindOpenJPEG to make find_package use the system version
 # instead (the local version hardcodes the openjpeg version so it is not update
@@ -226,8 +226,9 @@ cmake \
     -DWITH_LLVM:BOOL=ON \
     -DENABLE_CCACHE=OFF \
     -DCMAKE_BUILD_TYPE=Release \
+    -DOPTIX_ROOT_DIR=$PWD/include \
 %if 0%{?fedora}
-    -DWITH_CYCLES_EMBREE=OFF \
+    -DWITH_CYCLES_EMBREE=ON \
     %endif
 %ifnarch %{ix86} x86_64
     -DWITH_RAYOPTIMIZATION=OFF \
@@ -344,6 +345,13 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Sat Dec 26 2020 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.91.0-7
+- Updated to 2.91.0
+- Enabled OPTIX
+
+* Thu Nov 05 2020 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.90.0-8
+- Rebuilt for opencv 
 
 * Tue Sep 01 2020 David Va <davidva AT tuta DOT io> - 1:2.90.0-7
 - Updated to 2.90.0
