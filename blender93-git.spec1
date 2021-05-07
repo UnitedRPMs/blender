@@ -13,7 +13,6 @@
 # published by the Open Source Initiative.
 #
 # Please submit bugfixes or comments via https://goo.gl/zqFJft
-#
 
 # Turn off the brp-python-bytecompile automagic
 %global _python_bytecompile_extra 0
@@ -25,7 +24,7 @@
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.92.0
+%global blender_api 2.93.0
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -61,10 +60,10 @@ Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
 URL:        http://www.blender.org
 
-Source0:    http://download.%{name}.org/source/%{name}-%{version}.tar.xz
+Source0:    https://github.com/blender/blender/archive/f74b7e6ce9b905f8fe32048391512a3d79111325.zip
 Source1:    %{name}.thumbnailer
 Source2:    %{name}-fonts.metainfo.xml
-Source3:    https://github.com/blender/blender-addons-contrib/archive/v%{version}.tar.gz#/blender-addons-contrib.tar.gz
+Source3:    https://github.com/blender/blender-addons-contrib/archive/87f667ff3583a02b1d80e650937c95292951f6e6.zip
 Source4:    https://developer.download.nvidia.com/redist/optix/v7.0/OptiX-7.0.0-include.zip
 Source5:    %{name}.xml
 Source6:    %{name}.appdata.xml
@@ -72,7 +71,7 @@ Source10:   macros.%{name}
 
 
 Patch1:     blender-2.91-eigen3-log1p-ifelse.patch
-Patch2:     embree.patch
+Patch2:     embree-git.patch
 
 
 # Development stuff
@@ -167,7 +166,7 @@ BuildRequires:  libogg-devel
 BuildRequires:  libsamplerate-devel
 BuildRequires:  libsndfile-devel
 BuildRequires:  libvorbis-devel
-
+	
 # Typography stuff
 BuildRequires:  fontpackages-devel
 BuildRequires:  freetype-devel
@@ -181,7 +180,6 @@ BuildRequires:  freetype-devel
 BuildRequires:  libappstream-glib
 
 %endif
-
 
 Requires:       google-droid-sans-fonts
 Requires:       %{name}-fonts = %{?epoch:%{epoch}:}%{version}-%{release}
@@ -220,11 +218,11 @@ composition of several mono space fonts to cover several character sets.
 
 
 %prep
-%setup -n blender-%{version} -a3 -a4
+%setup -n blender-f74b7e6ce9b905f8fe32048391512a3d79111325 -a3 -a4
 %patch1 -p1
 %patch2 -p1
 
-mv -f blender-addons-contrib-%{version} release/scripts/addons_contrib
+mv -f blender-addons-contrib-87f667ff3583a02b1d80e650937c95292951f6e6 release/scripts/addons_contrib
 
 # Delete the bundled FindOpenJPEG to make find_package use the system version
 # instead (the local version hardcodes the openjpeg version so it is not update
@@ -241,10 +239,13 @@ find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(pyt
 
 #     -DCMAKE_INSTALL_LIBDIR=%{_lib} \
 #    -DCMAKE_INSTALL_FULL_LIBDIR=%{_lib} \
+#     -DWITH_CYCLES=%{cyclesflag} \
 #    -GNinja \
+
+
 mkdir -p build
 cmake -B build \
-    -GNinja \
+-C build_files/cmake/config/blender_release.cmake \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -256,7 +257,6 @@ cmake -B build \
 %if 0%{?fedora}
     -DWITH_CYCLES_EMBREE=%{cyclesflag} \
     %endif
-    -DWITH_CYCLES=%{cyclesflag} \
     -DBOOST_ROOT=%{_prefix} \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_SKIP_RPATH=ON \
@@ -276,7 +276,7 @@ cmake -B build \
     -DWITH_MEM_JEMALLOC=ON \
     -DWITH_MOD_OCEANSIM=ON \
     -DWITH_OPENCOLLADA=ON \
-    -DWITH_OPENCOLORIO=OFF \
+    -DWITH_OPENCOLORIO=ON \
     -DWITH_OPENIMAGEIO=ON \
     -DWITH_OPENVDB=ON \
     -DWITH_OPENVDB_BLOSC=ON \
@@ -296,14 +296,16 @@ cmake -B build \
 	-DWITH_RAYOPTIMIZATION=OFF \
 	-DWITH_CPU_SSE=OFF \
 %endif
+    -DCMAKE_C_FLAGS:STRING="$CFLAGS %{optflags} -fPIC -fopenmp" \
+    -DCMAKE_CXX_FLAGS:STRING="$CXXFLAGS %{optflags} -fPIC -fopenmp" \
+    -DCMAKE_CXX_STANDARD=17 \
     -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev 
 
-
-%ninja_build -C build -j2 
+%make_build -C build -j2
 
 
 %install
-%ninja_install -C build -j2
+%make_install -C build -j2
 
 # Thumbnailer
 install -p -D -m 644 %{S:1} %{buildroot}%{_datadir}/thumbnailers/%{name}.thumbnailer
@@ -373,9 +375,8 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 %changelog
 
-* Sat May 01 2021 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.92.0-7
-- Updated to 2.92.0
-- OpenColorIO disabled no yet ready for 2.0
+* Thu May 06 2021 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.93.0-7
+- Updated to 2.93.0
 
 * Sat Dec 26 2020 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.91.0-7
 - Updated to 2.91.0

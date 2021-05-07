@@ -1,0 +1,13 @@
+--- blender-2.91.0/extern/Eigen3/Eigen/src/Core/MathFunctions.h.ifelse	2020-02-17 19:00:06.000000000 +0900
++++ blender-2.91.0/extern/Eigen3/Eigen/src/Core/MathFunctions.h	2021-01-18 23:04:43.551976542 +0900
+@@ -482,8 +482,9 @@ struct log1p_impl {
+     EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar)
+     #if EIGEN_HAS_CXX11_MATH
+     using std::log1p;
+-    #endif
++    #else
+     using std_fallback::log1p;
++    #endif
+     return log1p(x);
+   }
+ };
