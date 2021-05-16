@@ -55,7 +55,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    7%{?dist}
+Release:    8%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -131,7 +131,7 @@ BuildRequires:  opensubdiv-devel
 # Picture/Video stuff
 BuildRequires:  alembic-devel
 %{?_with_ffmpeg:
-BuildRequires:  ffmpeg-devel
+BuildRequires:  ffmpeg-devel >= 4.4
 }
 BuildRequires:  libjpeg-turbo-devel
 BuildRequires:  libpng-devel
@@ -276,7 +276,11 @@ cmake -B build \
     -DWITH_MEM_JEMALLOC=ON \
     -DWITH_MOD_OCEANSIM=ON \
     -DWITH_OPENCOLLADA=ON \
+    %if 0%{?fedora} >= 33
     -DWITH_OPENCOLORIO=OFF \
+    %else
+    -DWITH_OPENCOLORIO=ON \
+    %endif
     -DWITH_OPENIMAGEIO=ON \
     -DWITH_OPENVDB=ON \
     -DWITH_OPENVDB_BLOSC=ON \
@@ -372,6 +376,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Wed May 12 2021 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.92.0-8
+- Rebuilt for ffmpeg 
 
 * Sat May 01 2021 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.92.0-7
 - Updated to 2.92.0
