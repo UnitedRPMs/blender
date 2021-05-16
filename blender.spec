@@ -104,6 +104,7 @@ BuildRequires:  python3dist(requests)
 
 BuildRequires:  subversion-devel
 BuildRequires:	help2man
+BuildRequires:	vulkan-loader
 
 # Compression stuff
 BuildRequires:  lzo-devel
