@@ -154,7 +154,9 @@ BuildRequires:	gmp-devel
 BuildRequires:	potrace-devel
 BuildRequires:	libharu-devel
 BuildRequires:  oidn-devel
+%if 0%{?fedora} >= 32
 BuildRequires:  openxr-devel
+%endif
 BuildRequires:  pkgconfig(oslcomp)
 BuildRequires:  openshadinglanguage
 BuildRequires:  openshadinglanguage-common-headers
