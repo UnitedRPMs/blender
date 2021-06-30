@@ -25,7 +25,7 @@
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %global gver .git%{shortcommit0}
 
-%global blender_api 2.92.0
+%global blender_api 2.93.0
 
 # Turn off the brp-python-bytecompile script
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
@@ -55,7 +55,7 @@
 Name:       blender
 Epoch:      1
 Version:    %{blender_api}
-Release:    8%{?dist}
+Release:    7%{?dist}
 
 Summary:    3D modeling, animation, rendering and post-production
 License:    GPLv2
@@ -101,7 +101,12 @@ BuildRequires:  pkgconfig(python3)
 BuildRequires:  python3-rpm-macros
 BuildRequires:  python3dist(numpy)
 BuildRequires:  python3dist(requests)
-
+%if 0%{?fedora} <= 32
+BuildRequires:  python3.9
+%else
+BuildRequires:  python3-devel
+%endif
+BuildRequires:  python3.9
 BuildRequires:  subversion-devel
 BuildRequires:	help2man
 BuildRequires:	vulkan-loader
@@ -131,6 +136,7 @@ BuildRequires:  opensubdiv-devel
 
 # Picture/Video stuff
 BuildRequires:  alembic-devel
+BuildRequires:  libvulkan.so.1
 %{?_with_ffmpeg:
 BuildRequires:  ffmpeg-devel >= 4.4
 }
@@ -191,7 +197,12 @@ Requires:       %{name}-fonts = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:       fontpackages-filesystem
 Requires:       python3dist(requests)
 Requires:       python3dist(numpy)
-
+%if 0%{?fedora} <= 32
+Requires:	python3.9
+%endif
+%if 0%{?fedora} >= 35
+Requires:	python3.9
+%endif
 Provides:       blender(ABI) = %{blender_api}
 
 %description
@@ -237,8 +248,18 @@ rm -f build_files/cmake/Modules/FindOpenJPEG.cmake
 
 # Change shebang in all relevant files in this directory and all subdirectories
 # See `man find` for how the `-exec command {} +` syntax works
-find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
 
+%if 0%{?fedora} >= 35 
+find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr/bin/python3.9=' {} +
+%endif
+
+%if 0%{?fedora} <= 34
+find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
+%endif
+
+%if 0%{?fedora} <= 32
+find -depth -type f -writable -name "*.py" -exec sed -iE '1s=^#! */usr/bin/\(python\|env python\)[23]\?=#!/usr/bin/python3.9=' {} +
+%endif
 
 %build
 
@@ -279,31 +300,42 @@ cmake -B build \
     -DWITH_MEM_JEMALLOC=ON \
     -DWITH_MOD_OCEANSIM=ON \
     -DWITH_OPENCOLLADA=ON \
-    %if 0%{?fedora} >= 33
-    -DWITH_OPENCOLORIO=OFF \
-    %else
     -DWITH_OPENCOLORIO=ON \
-    %endif
     -DWITH_OPENIMAGEIO=ON \
     -DWITH_OPENVDB=ON \
     -DWITH_OPENVDB_BLOSC=ON \
     -DWITH_PYTHON=ON \
+    %if 0%{?fedora} <= 32
+    -DWITH_PYTHON_INSTALL=ON \
+    -DPYTHON_LIBRARY=python3.9 \
+    -DPYTHON_INCLUDE_DIRS=/usr/include/python3.9 \
+    -DWITH_PYTHON_INSTALL_NUMPY=OFF  \
+    %else
     -DWITH_PYTHON_INSTALL=OFF \
+    -DWITH_PYTHON_INSTALL_NUMPY=OFF  \
+    %endif
+    %if 0%{?fedora} >= 35
+    -DWITH_PYTHON_INSTALL=ON \
+    -DPYTHON_LIBRARY=python3.9 \
+    -DPYTHON_INCLUDE_DIRS=/usr/include/python3.9 \
+    -DWITH_PYTHON_INSTALL_NUMPY=OFF  \
+    %endif
+    %if 0%{?fedora} <= 31
+    -DWITH_DOC_MANPAGE=OFF \
+    %endif
     -DWITH_PYTHON_INSTALL_REQUESTS=OFF \
     -DWITH_PYTHON_SAFETY=ON \
     -DWITH_SDL=ON \
     -DWITH_SYSTEM_LZO=ON \
-    -DPYTHON_VERSION=%{python3_version} \
     -DPYTHON_LIBPATH=/usr/lib64 \
-    -DWITH_PYTHON_INSTALL_NUMPY=OFF \
     -D_osl_LIBRARIES=%{_libdir} \
     -DOSL_INCLUDE_DIR=%{_includedir} \
     -DOSL_COMPILER=%{_bindir}/oslc \
     %ifnarch %{ix86} x86_64
-	-DWITH_RAYOPTIMIZATION=OFF \
-	-DWITH_CPU_SSE=OFF \
+    -DWITH_RAYOPTIMIZATION=OFF \
+    -DWITH_CPU_SSE=OFF \
 %endif
-    -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev 
+    -DCYCLES_CUDA_BINARIES_ARCH="sm_30;sm_35;sm_37;sm_50;sm_52;sm_60;sm_61;sm_70;sm_75" -Wno-dev  .
 
 
 %ninja_build -C build -j2 
@@ -361,7 +393,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 %{_datadir}/icons/hicolor/*/apps/%{name}*.*
 %{_datadir}/mime/packages/%{name}.xml
 %{_datadir}/thumbnailers/%{name}.thumbnailer
+%if 0%{?fedora} >= 32
 %{_mandir}/man1/%{name}.*
+%endif
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %{_metainfodir}/%{name}.appdata.xml
 %endif
@@ -379,6 +413,9 @@ rm -fr %{buildroot}%{_datadir}/%{blender_api}/locale
 
 
 %changelog
+
+* Mon Jun 14 2021 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.93.0-7
+- Updated to 2.93.0
 
 * Wed May 12 2021 Unitedrpms Project <unitedrpms AT protonmail DOT com> 1:2.92.0-8
 - Rebuilt for ffmpeg 
